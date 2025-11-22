@@ -1,0 +1,17 @@
+# Codigo de ejemplo, no deberia ser funcional
+target architecture i8086;
+
+# Funciona como el if __name__ == "__main__" de Python, se utiliza para generar casos de prueba en librerias y que
+# no se ejecute la logica completa al generar una lib, puedes hacer esto en raiz sin miedo, solo que si trabajas
+# con librerias este metodo es mas conveniente.
+def __main__(){
+    stack byte example = 10;
+    stack classic_pointer memory_test = 0x10000000 # Punto "seguro" segun la doc de Windows
+    
+    # if en bajo nivel
+    compare(example, 10){
+        case(equal){
+            goTo(memory_test);
+        }
+    }
+}

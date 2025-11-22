@@ -1,0 +1,48 @@
+import abstract_instruction
+import instruction_list/inst_like
+import re, strutils
+
+# Abstraccion para los tipo de memoria de una variable
+type RegionType* = enum
+    heap, stack, global
+
+# Abstraccion de todas las instrucciones de ASM que cumplen con la interfaz de variables
+# ("declaracion tipo var", como db, dw, etc)
+type VarLikeInstruction* = ref object of Instruction
+    typing*: string         # Tipo de la variable (byte, short, etc)
+    region*: RegionType     # Ubicacion en RAM de la variable
+
+# Metodo abstracto para obtener el ensamblador
+# De momento se usa args[0] debido a que no se soportan listas.
+method convertToAsm*(self: VarLikeInstruction): string =
+    var response = ""
+
+    case self.region
+    of heap:
+        response &= "mov cx, 1\n"
+        response &= "call malloc\n"
+        response &= "mov [ax], " & self.args[0] & "\n"
+
+    of stack:
+        response &= "sub sp, 1\n"
+        response &= "mov [bp-1], " & self.args[0] & "\n"
+
+    of global:
+        response &= self.name & " " & self.typing & " " & self.args[0] & "\n"
+
+    let instruction_asm = response
+    result = instruction_asm
+
+# Constructor de instrucciones, espera una cadena tipo "heap byte var_name = value;"
+proc createVarInstruction*(instruction: string, subarchitecture: string): VarLikeInstruction =
+    # Limpiar el dato de entrada
+    let r = re"^(heap|stack|global)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+?)\s*;?$"
+
+    if not (instruction =~ r):
+        raise newException(ValueError, "Invalid variable-like instruction: " & instruction)
+
+    result = VarLikeInstruction()
+    result.region  = parseEnum[RegionType](matches[0])
+    result.typing  = matches[1]
+    result.name    = matches[2]
+    result.args    = @[matches[3]]
