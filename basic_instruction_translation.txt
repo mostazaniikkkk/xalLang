@@ -1,0 +1,27 @@
+# Instrucciones de 16 bits
+[mov]
+old = mov var_x, var_y
+new = [
+    copyByte(var_x, var_y);
+    # v2
+    var_x = var_y;
+]
+
+[add]
+old = add receptor_var, 5
+new = [
+    addByte(receptor var, 5);
+    # v2
+    receptor_var += 5;           # Requiere tipado previo
+    byte receptor_var = 3 + 5;
+]
+
+[db]
+old = new_var db ?
+new = [
+    createVarByte(new_var, not_initialized);   # Si no se inicializa, el "?" de ASM
+    createVarByte(new_var, 10);                # Inicializado
+    # v2
+    byte new_var = not_initialized;
+    byte new_var = 10;
+]
